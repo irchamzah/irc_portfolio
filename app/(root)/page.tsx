@@ -1,5 +1,5 @@
 import PostCard from "@/components/cards/PostCard";
-import { fetchPosts } from "@/lib/actions/post.action";
+import { fetchPosts } from "@/lib/actions/post.actions";
 import { currentUser } from "@clerk/nextjs";
 
 export default async function Home() {

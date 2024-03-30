@@ -17,9 +17,9 @@ import { z } from "zod";
 
 import { usePathname, useRouter } from "next/navigation";
 
-// import { updateUser } from "@/lib/actions/user.action";
+// import { updateUser } from "@/lib/actions/user.actions";
 import { PostValidation } from "@/lib/validations/post";
-import { createPost } from "@/lib/actions/post.action";
+import { createPost } from "@/lib/actions/post.actions";
 
 interface Props {
   user: {
