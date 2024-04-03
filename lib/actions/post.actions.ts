@@ -24,7 +24,7 @@ export async function createPost({ text, author, communityId, path }: Params) {
 
     //Update user model
     await User.findByIdAndUpdate(author, {
-      $push: { post: createdPost._id },
+      $push: { posts: createdPost._id },
     });
 
     revalidatePath(path);
