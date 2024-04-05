@@ -1,10 +1,26 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import User from "../models/user.model";
-import { connectToDB } from "../mongoose";
-import Post from "../models/post.model";
 import { FilterQuery, SortOrder } from "mongoose";
+import { revalidatePath } from "next/cache";
+
+import Community from "../models/community.model";
+import Post from "../models/post.model";
+import User from "../models/user.model";
+
+import { connectToDB } from "../mongoose";
+
+export async function fetchUser(userId: string) {
+  try {
+    connectToDB();
+
+    return await User.findOne({ id: userId }).populate({
+      path: "communities",
+      model: Community,
+    });
+  } catch (error: any) {
+    throw new Error(`Failed to fetch user: ${error.message}`);
+  }
+}
 
 interface Params {
   userId: string;
@@ -17,15 +33,15 @@ interface Params {
 
 export async function updateUser({
   userId,
-  username,
-  name,
   bio,
-  image,
+  name,
   path,
+  username,
+  image,
 }: Params): Promise<void> {
-  connectToDB();
-
   try {
+    connectToDB();
+
     await User.findOneAndUpdate(
       { id: userId },
       {
@@ -46,46 +62,39 @@ export async function updateUser({
   }
 }
 
-export async function fetchUser(userId: string) {
-  try {
-    connectToDB();
-
-    return await User.findOne({ id: userId });
-    // .populate({
-    //   path: "communities",
-    //   model: Community,
-    // });
-  } catch (error: any) {
-    throw new Error(`Failed to fetch user: ${error.message}`);
-  }
-}
-
 export async function fetchUserPosts(userId: string) {
   try {
     connectToDB();
 
-    // Find all posts that authored by the user with the given userId
-    // TODO: Populate Community
+    // Find all posts authored by the user with the given userId
     const posts = await User.findOne({ id: userId }).populate({
       path: "posts",
       model: Post,
-      populate: {
-        path: "children",
-        model: Post,
-        populate: {
-          path: "author",
-          model: User,
-          select: "name image id",
+      populate: [
+        {
+          path: "community",
+          model: Community,
+          select: "name id image _id", // Select the "name" and "_id" fields from the "Community" model
         },
-      },
+        {
+          path: "children",
+          model: Post,
+          populate: {
+            path: "author",
+            model: User,
+            select: "name image id", // Select the "name" and "_id" fields from the "User" model
+          },
+        },
+      ],
     });
-
     return posts;
-  } catch (error: any) {
-    throw new Error(`Failed to fetch user posts: ${error.message}`);
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
+    throw error;
   }
 }
 
+// Almost similar to Thead (search + pagination) and Community (search + pagination)
 export async function fetchUsers({
   userId,
   searchString = "",
@@ -102,38 +111,45 @@ export async function fetchUsers({
   try {
     connectToDB();
 
+    // Calculate the number of users to skip based on the page number and page size.
     const skipAmount = (pageNumber - 1) * pageSize;
 
+    // Create a case-insensitive regular expression for the provided search string.
     const regex = new RegExp(searchString, "i");
 
+    // Create an initial query object to filter users.
     const query: FilterQuery<typeof User> = {
-      id: { $ne: userId },
+      id: { $ne: userId }, // Exclude the current user from the results.
     };
 
+    // If the search string is not empty, add the $or operator to match either username or name fields.
     if (searchString.trim() !== "") {
       query.$or = [
         { username: { $regex: regex } },
-
         { name: { $regex: regex } },
       ];
     }
 
-    const sortOption = { createdAt: sortBy };
+    // Define the sort options for the fetched users based on createdAt field and provided sort order.
+    const sortOptions = { createdAt: sortBy };
 
     const usersQuery = User.find(query)
-      .sort(sortOption)
+      .sort(sortOptions)
       .skip(skipAmount)
       .limit(pageSize);
 
+    // Count the total number of users that match the search criteria (without pagination).
     const totalUsersCount = await User.countDocuments(query);
 
     const users = await usersQuery.exec();
 
-    const isNext = totalUsersCount > skipAmount * users.length;
+    // Check if there are more users beyond the current page.
+    const isNext = totalUsersCount > skipAmount + users.length;
 
     return { users, isNext };
-  } catch (error: any) {
-    throw new Error(`Failed to fetch users: ${error.message}`);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error;
   }
 }
 
@@ -144,14 +160,15 @@ export async function getActivity(userId: string) {
     // Find all posts created by the user
     const userPosts = await Post.find({ author: userId });
 
-    // Collect all the child post ids (replies) from the 'children' field at the database
-    const childPostIds = userPosts.reduce((acc, userPosts) => {
-      return acc.concat(userPosts.children);
+    // Collect all the child post ids (replies) from the 'children' field of each user post
+    const childPostIds = userPosts.reduce((acc, userPost) => {
+      return acc.concat(userPost.children);
     }, []);
 
+    // Find and return the child posts (replies) excluding the ones created by the same user
     const replies = await Post.find({
       _id: { $in: childPostIds },
-      author: { $ne: userId },
+      author: { $ne: userId }, // Exclude posts authored by the same user
     }).populate({
       path: "author",
       model: User,
@@ -159,7 +176,8 @@ export async function getActivity(userId: string) {
     });
 
     return replies;
-  } catch (error: any) {
-    throw new Error(`Failed to fetch activity: ${error.message}`);
+  } catch (error) {
+    console.error("Error fetching replies: ", error);
+    throw error;
   }
 }
