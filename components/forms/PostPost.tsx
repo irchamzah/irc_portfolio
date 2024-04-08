@@ -37,6 +37,7 @@ interface Props {
 function PostPost({ userId }: { userId: string }) {
   const router = useRouter();
   const pathname = usePathname();
+
   const { organization } = useOrganization();
 
   const form = useForm({
@@ -48,7 +49,6 @@ function PostPost({ userId }: { userId: string }) {
   });
 
   const onSubmit = async (values: z.infer<typeof PostValidation>) => {
-    // console.log("ORGANIZATIONNNNNNNNNNN", organization);
     await createPost({
       text: values.post,
       author: userId,

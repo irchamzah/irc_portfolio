@@ -13,10 +13,9 @@ async function Page() {
 
   // getActivity or Notification
   const activity = await getActivity(userInfo._id);
-  // console.log(activity);
 
   return (
-    <section>
+    <>
       <h1 className="mb-10 head-text">Activity</h1>
       <section className="mt-10 flex flex-col gap-5">
         {activity.length > 0 ? (
@@ -46,7 +45,7 @@ async function Page() {
           <p className="!text-base-regular text-light-3">No activity yet</p>
         )}
       </section>
-    </section>
+    </>
   );
 }
 
