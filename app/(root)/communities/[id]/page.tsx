@@ -7,12 +7,18 @@ import PostsTab from "@/components/shared/PostsTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchCommunityDetails } from "@/lib/actions/community.actions";
 import UserCard from "@/components/cards/UserCard";
+import { redirect } from "next/navigation";
 
 async function Page({ params }: { params: { id: string } }) {
   const user = await currentUser();
   if (!user) return null;
 
   const communityDetails = await fetchCommunityDetails(params.id);
+  if (!communityDetails) return null;
+
+  const communityAuthMemberId = await communityDetails.members.find(
+    (member: any) => member.id === user.id
+  );
 
   return (
     <section>
@@ -24,6 +30,7 @@ async function Page({ params }: { params: { id: string } }) {
         imgUrl={communityDetails.image}
         bio={communityDetails.bio}
         type="Community"
+        memberId={communityAuthMemberId?.id}
       />
 
       <div className="mt-9">

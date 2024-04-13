@@ -27,7 +27,7 @@ function DeletePost({
       alt="Delete"
       width={18}
       height={18}
-      className="cursor-pointer object-cover"
+      className="cursor-pointer object-cover ml-3"
       onClick={async () => {
         deletePost(JSON.parse(postId), pathname);
         if (!parentId || !isComment) {

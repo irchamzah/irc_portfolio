@@ -106,7 +106,7 @@ const PostCard = ({
               </div>
 
               {comments.length > 0 && (
-                <div className="ml-1 mt-3 flex items-center gap-2">
+                <div className="ml-1 flex items-center gap-2">
                   {comments.slice(0, 3).map((comment, index) => (
                     <Image
                       key={index}
@@ -127,6 +127,31 @@ const PostCard = ({
                   </Link>
                 </div>
               )}
+
+              <div className="flex flex-col">
+                <p className="text-subtle-medium text-gray-1 mr-1">
+                  {formatDateString(createdAt)}
+                </p>
+
+                {!isComment && community && (
+                  <Link
+                    href={`/communities/${community.id}`}
+                    className="flex-row flex"
+                  >
+                    <p className="text-subtle-medium text-gray-1">
+                      {community.name} Community
+                    </p>
+
+                    <Image
+                      src={community.image}
+                      alt={community.name}
+                      width={14}
+                      height={14}
+                      className="ml-1 object-cover rounded-full"
+                    />
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -139,25 +164,6 @@ const PostCard = ({
           isComment={isComment}
         />
       </div>
-
-      {!isComment && community && (
-        <Link
-          href={`/communities/${community.id}`}
-          className="mt-5 flex items-center"
-        >
-          <p className="text-subtle-medium text-gray-1">
-            {formatDateString(createdAt)} - {community.name} Community
-          </p>
-
-          <Image
-            src={community.image}
-            alt={community.name}
-            width={14}
-            height={14}
-            className="ml-1 object-cover rounded-full"
-          />
-        </Link>
-      )}
     </article>
   );
 };

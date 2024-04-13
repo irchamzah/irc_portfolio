@@ -18,7 +18,7 @@ export default async function Home({
 
   const result = await fetchPosts(
     searchParams.page ? +searchParams.page : 1,
-    10
+    20
   );
   return (
     <>
