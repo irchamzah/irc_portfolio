@@ -7,6 +7,7 @@ import Post from "../models/post.model";
 import User from "../models/user.model";
 
 import { connectToDB } from "../mongoose";
+import { revalidatePath } from "next/cache";
 
 export async function createCommunity(
   id: string,
@@ -266,6 +267,35 @@ export async function updateCommunityInfo(
     // Handle any errors
     console.error("Error updating community information:", error);
     throw error;
+  }
+}
+
+export async function updateCommunity({
+  communityId,
+  bio,
+  path,
+}: {
+  communityId: string;
+  bio: string;
+  path: string;
+}): Promise<void> {
+  try {
+    connectToDB();
+
+    await Community.findOneAndUpdate(
+      { id: communityId },
+      {
+        bio,
+        onboarded: true,
+      },
+      { upsert: true }
+    );
+
+    if (path === "/communities/edit") {
+      revalidatePath(path);
+    }
+  } catch (error: any) {
+    throw new Error(`Failed to create/update user: ${error.message}`);
   }
 }
 

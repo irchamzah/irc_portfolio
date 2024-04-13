@@ -19,7 +19,7 @@ async function Page({ params }: { params: { id: string } }) {
 
   const communityData = {
     id: user?.id,
-    objectId: communityDetails?._id,
+    objectId: communityDetails?.id,
     username: communityDetails ? communityDetails?.username : user?.username,
     name: communityDetails ? communityDetails?.name : user?.firstName || "",
     bio: communityDetails ? communityDetails?.bio : "",
@@ -31,7 +31,7 @@ async function Page({ params }: { params: { id: string } }) {
       <h1 className="head-text">Edit Community</h1>
       <p className="mt-3 text-base-regular text-light-2">Make any changes</p>
       <section className="mt-12">
-        <CommunityProfile user={communityData} btnTitle="Save" />
+        <CommunityProfile community={communityData} btnTitle="Save" />
       </section>
     </>
   );
