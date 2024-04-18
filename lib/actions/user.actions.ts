@@ -22,15 +22,6 @@ export async function fetchUser(userId: string) {
   }
 }
 
-interface Params {
-  userId: string;
-  username: string;
-  name: string;
-  bio: string;
-  image: string;
-  path: string;
-}
-
 export async function updateUser({
   userId,
   bio,
@@ -38,7 +29,14 @@ export async function updateUser({
   path,
   username,
   image,
-}: Params): Promise<void> {
+}: {
+  userId: string;
+  username: string;
+  name: string;
+  bio: string;
+  image: string;
+  path: string;
+}): Promise<void> {
   try {
     connectToDB();
 
@@ -82,7 +80,7 @@ export async function fetchUserPosts(userId: string) {
           populate: {
             path: "author",
             model: User,
-            select: "name image id", // Select the "name" and "_id" fields from the "User" model
+            select: "name image id ", // Select the "name" and "_id" fields from the "User" model
           },
         },
       ],
@@ -94,7 +92,38 @@ export async function fetchUserPosts(userId: string) {
   }
 }
 
-// Almost similar to Thead (search + pagination) and Community (search + pagination)
+export async function fetchUserReplies(userId: string) {
+  try {
+    connectToDB();
+
+    // Find all posts authored by the user with the given userId
+    const posts = await User.findOne({ id: userId }).populate({
+      path: "posts",
+      model: Post,
+      populate: [
+        {
+          path: "community",
+          model: Community,
+          select: "name id image _id", // Select the "name" and "_id" fields from the "Community" model
+        },
+        {
+          path: "children",
+          model: Post,
+          populate: {
+            path: "author",
+            model: User,
+            select: "name image id ", // Select the "name" and "_id" fields from the "User" model
+          },
+        },
+      ],
+    });
+    return posts;
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
+    throw error;
+  }
+}
+
 export async function fetchUsers({
   userId,
   searchString = "",

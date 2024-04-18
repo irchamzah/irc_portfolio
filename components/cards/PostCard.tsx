@@ -39,6 +39,8 @@ const PostCard = ({
   comments,
   isComment,
 }: Props) => {
+  // console.log("ISI DARI COMMUNITY ------>", community);
+
   return (
     <article
       className={`flex w-full flex-col rounded-xl ${

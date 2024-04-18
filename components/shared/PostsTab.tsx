@@ -1,4 +1,4 @@
-import { fetchUserPosts } from "@/lib/actions/user.actions";
+import { fetchUserPosts, fetchUserReplies } from "@/lib/actions/user.actions";
 import { redirect } from "next/navigation";
 import PostCard from "../cards/PostCard";
 import { fetchCommunityPosts } from "@/lib/actions/community.actions";
@@ -11,11 +11,15 @@ interface Props {
 
 const PostsTab = async ({ currentUserId, accountId, accountType }: Props) => {
   let result: any;
+  let replies: any;
 
   if (accountType === "Community") {
     result = await fetchCommunityPosts(accountId);
+
+    // console.log("ISI DARI RESULT.POSTS ----------->", result.posts);
   } else {
     result = await fetchUserPosts(accountId);
+    // console.log("ISI DARI RESULT.POSTS ----------->", result.posts);
   }
 
   if (!result) redirect("/");

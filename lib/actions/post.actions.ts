@@ -48,14 +48,17 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
   return { posts, isNext };
 }
 
-interface Params {
+export async function createPost({
+  text,
+  author,
+  communityId,
+  path,
+}: {
   text: string;
   author: string;
   communityId: string | null;
   path: string;
-}
-
-export async function createPost({ text, author, communityId, path }: Params) {
+}) {
   try {
     connectToDB();
 
